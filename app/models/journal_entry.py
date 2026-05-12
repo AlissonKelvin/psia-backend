@@ -1,4 +1,4 @@
-from datetime import UTC, UTC, datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey, Text
@@ -12,8 +12,10 @@ class JournalEntry:
     __tablename__ = 'journal_entries'
     patient_id: Mapped[UUID] = mapped_column(ForeignKey('patients.id'))
     content: Mapped[str] = mapped_column(Text)
-    data_created: Mapped[datetime] = mapped_column(insert_default=datetime.now(UTC))
-    data_updated: Mapped[datetime] = mapped_column(
+    date_created: Mapped[datetime] = mapped_column(
+        insert_default=datetime.now(UTC)
+    )
+    date_updated: Mapped[datetime] = mapped_column(
         insert_default=datetime.now(UTC), onupdate=datetime.now(UTC)
     )
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(init=False, primary_key=True, insert_default=uuid4)

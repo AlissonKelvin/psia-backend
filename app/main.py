@@ -1,18 +1,25 @@
 from fastapi import FastAPI
-from http import HTTPStatus
-
 from sqlalchemy import text
+
 from app.database import engine
+from app.routers.users import router as users_router
 
-app = FastAPI(title='PSI App API')
+app = FastAPI(
+    title='PSIA API',
+    version='0.1.0',
+)
+
+app.include_router(users_router)
 
 
-@app.get('/health', status_code=HTTPStatus.OK)
+@app.get('/health')
 def health():
-    return {'status': 'healthy'}
+    return {'status': 'ok'}
 
 
 @app.get('/db-check')
 def db_check():
     with engine.connect() as conn:
         conn.execute(text('SELECT 1'))
+
+    return {'database': 'ok'}
