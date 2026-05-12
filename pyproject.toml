@@ -1,0 +1,44 @@
+[project]
+name = "psi-mvp"
+version = "0.1.0"
+description = "Backend do MVP de apoio psicologico"
+readme = "README.md"
+requires-python = ">=3.14.0"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy",
+    "pydantic-settings",
+    "psycopg2-binary",
+    "python-multipart",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "taskipy",
+]
+
+[tool.ruff]
+line-length = 79
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+preview = true
+select = ["I", "F", "E", "W", "PL", "PT"]
+
+[tool.ruff.format]
+preview = true
+quote-style = "single"
+
+[tool.taskipy.tasks]
+run = "uvicorn app.main:app --reload"
+
+lint = "ruff check ."
+format = "ruff check . --fix && ruff format ."
+
+pre_test = "task lint"
+test = "pytest --cov=app -vv"
+post_test = "coverage html"
