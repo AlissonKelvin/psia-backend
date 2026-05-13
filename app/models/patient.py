@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey
@@ -20,4 +20,6 @@ class Patient:
     date_updated: Mapped[datetime] = mapped_column(
         insert_default=datetime.now(UTC), onupdate=datetime.now(UTC)
     )
-    id: Mapped[UUID] = mapped_column(init=False, primary_key=True, insert_default=uuid4)
+    id: Mapped[UUID] = mapped_column(
+        init=False, primary_key=True, insert_default=uuid4
+    )

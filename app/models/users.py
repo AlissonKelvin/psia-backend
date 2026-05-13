@@ -1,9 +1,9 @@
-from datetime import datetime, UTC
-from uuid import uuid4, UUID
-
-from app.models.registry import table_registry
+from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.registry import table_registry
 
 
 @table_registry.mapped_as_dataclass
@@ -22,7 +22,9 @@ class User:
         insert_default=datetime.now(UTC),
         onupdate=datetime.now(UTC),
     )
-    id: Mapped[UUID] = mapped_column(init=False, primary_key=True, insert_default=uuid4)
+    id: Mapped[UUID] = mapped_column(
+        init=False, primary_key=True, insert_default=uuid4
+    )
 
     @property
     def id_string(self):  # pragma: no cover
