@@ -12,11 +12,14 @@ class JournalEntry:
     __tablename__ = 'journal_entries'
     patient_id: Mapped[UUID] = mapped_column(ForeignKey('patients.id'))
     content: Mapped[str] = mapped_column(Text)
+    source_type: Mapped[str] = mapped_column(Text)
     date_created: Mapped[datetime] = mapped_column(
-        insert_default=datetime.now(UTC)
+        init=False, insert_default=datetime.now(UTC)
     )
     date_updated: Mapped[datetime] = mapped_column(
-        insert_default=datetime.now(UTC), onupdate=datetime.now(UTC)
+        init=False,
+        insert_default=datetime.now(UTC),
+        onupdate=datetime.now(UTC),
     )
     id: Mapped[UUID] = mapped_column(
         init=False, primary_key=True, insert_default=uuid4

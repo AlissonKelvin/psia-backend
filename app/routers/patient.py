@@ -30,6 +30,12 @@ def create_patient(
             detail='User with this email already exists',
         )
 
+    if current_user.role != 'psychologist':
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail='Only psychologists can create patients.',
+        )
+
     patient_user = User(
         name=patient.name,
         email=patient.email,
@@ -65,7 +71,7 @@ def list_patients(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-    rows = session.scalars(
+    rows = session.execute(
         select(Patient, User)
         .join(User, Patient.user_id == User.id)
         .where(Patient.psychologist_id == current_user.id)

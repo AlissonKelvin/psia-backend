@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 
 class JournalEntryBase(BaseModel):
-    patient_id: UUID
     content: str
     source_type: str = 'text'
 
