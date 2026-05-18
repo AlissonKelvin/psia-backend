@@ -1,0 +1,58 @@
+import json
+
+from openai import OpenAI
+
+from app.settings import settings
+
+PROMPT_VERSION = 'journal_analysis_v1'
+
+client = OpenAI(
+    api_key=settings.GROQ_API_KEY,
+    base_url='https://api.groq.com/openai/v1',
+)
+
+
+def analyze_journal_entry(content: str) -> dict:
+    response = client.chat.completions.create(
+        model=settings.GROQ_LLM_MODEL,
+        messages=[
+            {
+                'role': 'system',
+                'content': (
+                    'Você é um assistente de apoio clínico para psicólogos.'
+                    'Sua função é estruturar relatos de pacientes sem diagnosticar,'
+                    'sem prescrever tratamento e sem substituir o profissional.'
+                    'Responda apenas em JSON válido.'
+                ),
+            },
+            {
+                'role': 'user',
+                'content': f"""
+Analise o relato abaixo e retorne apenas um JSON com estes campos:
+
+{{
+  "summary": "resumo breve do relato",
+  "main_emotion": "emoção principal percebida",
+  "trigger": "possível gatilho ou situação",
+  "intensity": "baixa, média ou alta",
+  "thought_pattern": "possível padrão de pensamento observado",
+  "behavior": "comportamento ou reação descrita",
+  "clinical_notes": "observações úteis para o psicólogo",
+  "suggested_focus": "possíveis pontos para explorar na sessão"
+}}
+
+Relato:
+{content}
+""",
+            },
+        ],
+        temperature=0.2,
+        response_format={'type': 'json_object'},
+    )
+
+    result = response.choices[0].message.content
+
+    if result is None:
+        raise ValueError('Empty AI response')
+
+    return json.loads(result)

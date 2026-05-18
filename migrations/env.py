@@ -8,6 +8,7 @@ from alembic import context
 from app.models import users
 from app.models import patient
 from app.models import journal_entry
+from app.models import journal_entry_analysis  
 
 from app.settings import settings
 
