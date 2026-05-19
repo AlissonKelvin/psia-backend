@@ -35,11 +35,11 @@ venv\Scripts\activate
 
 ## Fluxo principal
 
-Psicóloga cria conta
-Psicóloga faz login
-Psicóloga cadastra paciente
-Paciente faz login
-Paciente envia relato por texto ou áudio
-Backend transcreve áudio quando necessário
-IA estrutura o relato
-Psicóloga consulta relatos e resumo pré-sessão
+- Psicóloga cria conta
+- Psicóloga faz login
+- Psicóloga cadastra paciente
+- Paciente faz login
+- Paciente envia relato por texto ou áudio
+- Backend transcreve áudio quando necessário
+- IA estrutura o relato
+- Psicóloga consulta relatos e resumo pré-sessão
