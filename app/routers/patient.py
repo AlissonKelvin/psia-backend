@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -10,6 +11,9 @@ from app.models.patient import Patient
 from app.models.users import User
 from app.schemas.patient import PatientBase, PatientList, PatientPublic
 from app.security import get_password_hash
+from app.models.journal_entry import JournalEntry
+from app.models.journal_entry_analysis import JournalEntryAnalysis
+from app.schemas.session_summary import SessionSummaryPublic
 
 router = APIRouter(prefix='/patients', tags=['patients'])
 
@@ -91,3 +95,82 @@ def list_patients(
     ]
 
     return {'patients': patients}
+
+
+@router.get(
+    '/{patient_id}/session-summary', response_model=SessionSummaryPublic
+)
+def get_patient_session_summary(
+    patient_id: UUID,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    patient = session.scalar(
+        select(Patient).where(
+            Patient.id == patient_id,
+            Patient.psychologist_id == current_user.id,
+        )
+    )
+    if current_user.role != 'psychologist':
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail='Only psychologists can access patient session summaries.',
+        )
+
+    if not patient:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Patient not found or not assigned to this psychologist.',
+        )
+
+    rows = session.execute(
+        select(JournalEntry, JournalEntryAnalysis)
+        .outerjoin(
+            JournalEntryAnalysis,
+            JournalEntryAnalysis.journal_entry_id == JournalEntry.id,
+        )
+        .where(JournalEntry.patient_id == patient.id)
+        .order_by(JournalEntry.date_created.desc())
+    ).all()
+
+    entries = []
+    main_emotions = set()
+    triggers = set()
+    cognitive_patterns = set()
+    suggested_focus = set()
+
+    for journal_entry, analysis in rows:
+        if analysis:
+            if analysis.main_emotion:
+                main_emotions.add(analysis.main_emotion)
+            if analysis.trigger:
+                triggers.add(analysis.trigger)
+            if analysis.cognitive_patterns:
+                cognitive_patterns.add(analysis.cognitive_patterns)
+            if analysis.suggested_focus:
+                suggested_focus.add(analysis.suggested_focus)
+        entries.append({
+            'journal_entry_id': journal_entry.id,
+            'content': journal_entry.content,
+            'source_type': journal_entry.source_type,
+            'date_created': journal_entry.date_created,
+            'summary': analysis.summary if analysis else None,
+            'main_emotion': analysis.main_emotion if analysis else None,
+            'trigger': analysis.trigger if analysis else None,
+            'intensity': analysis.intensity if analysis else None,
+            'cognitive_patterns': analysis.cognitive_patterns
+            if analysis
+            else None,
+            'behavior': analysis.behavior if analysis else None,
+            'suggested_focus': analysis.suggested_focus if analysis else None,
+        })
+
+    return {
+        'patient_id': patient.id,
+        'total_entries': len(entries),
+        'main_emotions': sorted(main_emotions),
+        'triggers': sorted(triggers),
+        'cognitive_patterns': sorted(cognitive_patterns),
+        'suggested_focus': sorted(suggested_focus),
+        'entries': entries,
+    }

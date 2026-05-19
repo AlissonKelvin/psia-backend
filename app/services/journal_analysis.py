@@ -31,15 +31,33 @@ def analyze_journal_entry(content: str) -> dict:
 Analise o relato abaixo e retorne apenas um JSON com estes campos:
 
 {{
-  "summary": "resumo breve do relato",
-  "main_emotion": "emoção principal percebida",
-  "trigger": "possível gatilho ou situação",
-  "intensity": "baixa, média ou alta",
-  "thought_pattern": "possível padrão de pensamento observado",
-  "behavior": "comportamento ou reação descrita",
-  "clinical_notes": "observações úteis para o psicólogo",
-  "suggested_focus": "possíveis pontos para explorar na sessão"
+    "summary": "resumo breve do relato",
+    "main_emotion": "emoção principal percebida",
+    "trigger": "possível gatilho ou situação",
+    "intensity": "baixa, média ou alta",
+    "cognitive_patterns": "possíveis padrões cognitivos/emocionais observados",
+    "behavior": "comportamento ou reação descrita",
+    "clinical_notes": "observações úteis para o psicólogo",
+    "suggested_focus": "possíveis pontos para explorar na sessão"
 }}
+
+Para o campo "cognitive_patterns", identifique padrões como:
+- ruminação
+- pensamento catastrófico
+- autocobrança
+- perfeccionismo
+- medo de julgamento
+- necessidade de aprovação
+- culpa
+- insegurança
+- evitação
+- ansiedade antecipatória
+
+Se não houver informação suficiente, use null.
+
+Não faça diagnóstico.
+Não prescreva tratamento.
+Não substitua a avaliação do psicólogo.
 
 Relato:
 {content}
