@@ -26,3 +26,8 @@ class SessionSummaryPublic(BaseModel):
     cognitive_patterns: list[str]
     suggested_focus: list[str]
     entries: list[SessionSummaryEntry]
+
+
+class SessionAISummary(BaseModel):
+    patient_id: UUID
+    summary: str

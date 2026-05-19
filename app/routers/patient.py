@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from uuid import UUID
+from datetime import datetime, UTC, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -14,6 +15,8 @@ from app.security import get_password_hash
 from app.models.journal_entry import JournalEntry
 from app.models.journal_entry_analysis import JournalEntryAnalysis
 from app.schemas.session_summary import SessionSummaryPublic
+from app.services.session_summary_ai import generate_session_summary
+from app.schemas.session_summary import SessionAISummary
 
 router = APIRouter(prefix='/patients', tags=['patients'])
 
@@ -173,4 +176,63 @@ def get_patient_session_summary(
         'cognitive_patterns': sorted(cognitive_patterns),
         'suggested_focus': sorted(suggested_focus),
         'entries': entries,
+    }
+
+
+@router.get(
+    '/{patient_id}/session-ai-summary', response_model=SessionAISummary
+)
+def generate_session_ai_summary(
+    patient_id: UUID,
+    days: int = 7,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != 'psychologist':
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail='Only psychologists can access patient session summaries.',
+        )
+    patient = session.scalar(
+        select(Patient).where(
+            Patient.id == patient_id,
+            Patient.psychologist_id == current_user.id,
+        )
+    )
+    if not patient:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Patient not found or not assigned to this psychologist.',
+        )
+
+    start_date = datetime.now(UTC) - timedelta(days=days)
+
+    rows = session.execute(
+        select(JournalEntry, JournalEntryAnalysis)
+        .join(
+            JournalEntryAnalysis,
+            JournalEntryAnalysis.journal_entry_id == JournalEntry.id,
+        )
+        .where(JournalEntry.patient_id == patient.id)
+        .where(JournalEntry.date_created >= start_date)
+        .order_by(JournalEntry.date_created.desc())
+    ).all()
+
+    entries = [
+        {
+            'date_created': journal_entry.date_created,
+            'summary': analysis.summary,
+            'main_emotion': analysis.main_emotion,
+            'trigger': analysis.trigger,
+            'cognitive_patterns': analysis.cognitive_patterns,
+            'behavior': analysis.behavior,
+        }
+        for journal_entry, analysis in rows
+    ]
+
+    summary = generate_session_summary(entries)
+
+    return {
+        'patient_id': patient.id,
+        'summary': summary,
     }
