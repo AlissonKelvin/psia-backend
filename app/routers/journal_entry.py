@@ -67,8 +67,8 @@ def create_journal_entry(
 
     db_analysis = JournalEntryAnalysis(
         journal_entry_id=db_journal_entry.id,
-        summary=analysis_data['summary'],
-        main_emotion=analysis_data['main_emotion'],
+        summary=analysis_data['summary'] or 'Resumo não disponível',
+        main_emotion=analysis_data['main_emotion'] or 'Emoção não disponível',
         trigger=analysis_data.get('trigger'),
         intensity=analysis_data.get('intensity'),
         cognitive_patterns=analysis_data.get('cognitive_patterns'),
@@ -135,7 +135,7 @@ async def create_audio_journal_entry(
 
         db_analysis = JournalEntryAnalysis(
             journal_entry_id=db_journal_entry.id,
-            summary=analysis_data['summary'],
+            summary=analysis_data['summary'] or 'Resumo não disponível',
             main_emotion=analysis_data['main_emotion'],
             trigger=analysis_data.get('trigger'),
             intensity=analysis_data.get('intensity'),

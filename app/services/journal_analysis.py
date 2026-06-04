@@ -54,6 +54,8 @@ Para o campo "cognitive_patterns", identifique padrões como:
 - ansiedade antecipatória
 
 Se não houver informação suficiente, use null.
+Os campos summary e main_emotion são obrigatórios.
+Se não houver emoção clara, use "neutra" ou "não identificada".
 
 Não faça diagnóstico.
 Não prescreva tratamento.
